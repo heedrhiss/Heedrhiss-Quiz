@@ -5,8 +5,10 @@ import Error from './Error';
 import { Main } from './Main';
 import { useEffect } from 'react';
 // import { type } from '@testing-library/user-event/dist/type';
-import Start from './Startscreen';
+import Start from './StartScreen';
 import { Question } from './Quest';
+import Progress from './Progress';
+import FinishedScreen from './FinishedScreen';
 
 const initialState = {
   questions: [],
@@ -14,6 +16,7 @@ const initialState = {
   index: 0,
   answer: null,
   points: 0,
+  highScore: 0
 }
 
 function reducer(state, action){
@@ -26,7 +29,7 @@ function reducer(state, action){
       return {...state, status: 'error'}
 
     case 'start':
-    return {...state, status: 'start'}
+      return {...state, status: 'start'}
 
     case 'answer':
       const curQuestion = state.questions[state.index];
@@ -35,6 +38,12 @@ function reducer(state, action){
 
     case 'next':
       return{...state, index: state.index + 1, answer: null}
+    
+    case 'finish':
+      return{...state, status: 'finished', answer: null}
+
+    case 'restart':
+      return{...initialState, questions: state.questions, status:'ready'}
 
   default:
       throw new Error("Unknown Action")
@@ -42,8 +51,9 @@ function reducer(state, action){
 }
 
 function App() {
-const [{questions, status, index, answer}, dispatch] = useReducer(reducer, initialState);
+const [{questions, status, index, answer, points}, dispatch] = useReducer(reducer, initialState);
 const num = questions.length;
+const maxPoint= questions.reduce((prev,cur)=> prev+cur.points, 0)
 
 useEffect(function(){
 async function fetchQuest(){
@@ -65,17 +75,26 @@ async function fetchQuest(){
         {status === "loading" && <Loader />}
         {status === "ready" && <Start num={num} dispatch={dispatch}/>}
         {status === "error" && <Error />}
-        {status === "start" && <Question question={questions[index]} index={index} dispatch={dispatch} answer={answer}/>}
-        <Next answer={answer} dispatch={dispatch}/>
+        {status === "start" && 
+        <>
+        <Progress index={index} num={num} answer={answer} points={points} max={maxPoint}/>
+        <Question question={questions[index]} index={index} dispatch={dispatch} answer={answer}/>
+        </>}
+        {status==="finished" && <FinishedScreen max={maxPoint} points={points} dispatch={dispatch}/>}
+        <Next answer={answer} dispatch={dispatch} index={index} num={num}/>
+        
       </Main>
     </div>
   );
 }
 
-function Next({dispatch, answer}){
+function Next({dispatch, answer, num, index}){
   if(answer === null ) return;
-  return(
+  if(index < num - 1) return(
     <button className='btn btn-ui' onClick={()=>dispatch({type: 'next'})}>Next</button>
+  )
+  if(index === num - 1) return(
+    <button className='btn btn-ui' onClick={()=>dispatch({type: 'finish'})}>Finish</button>
   )
 }
 

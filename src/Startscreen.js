@@ -1,5 +1,4 @@
 
-
 export default function Start({num, dispatch}){
     return <div className="start">
         <h2>Welcome To My React Quiz</h2>
