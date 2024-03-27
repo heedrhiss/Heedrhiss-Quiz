@@ -1,4 +1,5 @@
 import { useReducer } from 'react';
+
 import Header from './Header';
 import Loader from './Loader';
 import Error from './Error';
@@ -9,6 +10,8 @@ import Start from './StartScreen';
 import { Question } from './Quest';
 import Progress from './Progress';
 import FinishedScreen from './FinishedScreen';
+import Footer from './Footer';
+import Timer from './Timer';
 
 const initialState = {
   questions: [],
@@ -16,7 +19,8 @@ const initialState = {
   index: 0,
   answer: null,
   points: 0,
-  highScore: 0
+  highScore: 0,
+  timer: null
 }
 
 function reducer(state, action){
@@ -29,7 +33,7 @@ function reducer(state, action){
       return {...state, status: 'error'}
 
     case 'start':
-      return {...state, status: 'start'}
+      return {...state, status: 'start', timer: state.questions.length * 15}
 
     case 'answer':
       const curQuestion = state.questions[state.index];
@@ -45,13 +49,19 @@ function reducer(state, action){
     case 'restart':
       return{...initialState, questions: state.questions, status:'ready'}
 
+    case 'timer':
+      return{
+        ...state, timer: state.timer - 1,
+        status: state.timer === 0 ? 'finished' : state.status,
+      }
+
   default:
       throw new Error("Unknown Action")
   }
 }
 
 function App() {
-const [{questions, status, index, answer, points}, dispatch] = useReducer(reducer, initialState);
+const [{questions, status, index, answer, points, timer}, dispatch] = useReducer(reducer, initialState);
 const num = questions.length;
 const maxPoint= questions.reduce((prev,cur)=> prev+cur.points, 0)
 
@@ -81,8 +91,10 @@ async function fetchQuest(){
         <Question question={questions[index]} index={index} dispatch={dispatch} answer={answer}/>
         </>}
         {status==="finished" && <FinishedScreen max={maxPoint} points={points} dispatch={dispatch}/>}
+        <Footer>
+        {status === 'start' && <Timer timer={timer} dispatch={dispatch}/>}
         <Next answer={answer} dispatch={dispatch} index={index} num={num}/>
-        
+        </Footer>
       </Main>
     </div>
   );
