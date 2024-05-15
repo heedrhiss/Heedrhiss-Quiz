@@ -1,12 +1,12 @@
 import { useReducer } from 'react';
+// import { type } from '@testing-library/user-event/dist/type';
 
 import Header from './Header';
 import Loader from './Loader';
 import Error from './Error';
 import { Main } from './Main';
 import { useEffect } from 'react';
-// import { type } from '@testing-library/user-event/dist/type';
-import Start from './StartScreen';
+import StartScreen from './StartScreen';
 import { Question } from './Quest';
 import Progress from './Progress';
 import FinishedScreen from './FinishedScreen';
@@ -83,7 +83,7 @@ async function fetchQuest(){
       <Header />
       <Main>
         {status === "loading" && <Loader />}
-        {status === "ready" && <Start num={num} dispatch={dispatch}/>}
+        {status === "ready" && <StartScreen num={num} dispatch={dispatch}/>}
         {status === "error" && <Error />}
         {status === "start" && 
         <>
